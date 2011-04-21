@@ -43,7 +43,7 @@ module ActiveRecord
         @raw_connection.commit
       end
 
-      def rollback
+      def eollback
         @raw_connection.rollback
       end
 
@@ -60,8 +60,6 @@ module ActiveRecord
       # known state.
       def ping
         @raw_connection.ping
-      rescue OCIException => e
-        raise OracleEnhancedConnectionException, e.message
       end
 
       def active?
@@ -70,8 +68,6 @@ module ActiveRecord
 
       def reset!
         @raw_connection.reset!
-      rescue OCIException => e
-        raise OracleEnhancedConnectionException, e.message
       end
 
       def exec(sql, *bindvars, &block)
@@ -342,7 +338,7 @@ class OCI8EnhancedAutoRecover < DelegateClass(OCI8) #:nodoc:
 
   # Resets connection, by logging off and creating a new connection.
   def reset! #:nodoc:
-    logoff rescue nil
+    logoff 
     begin
       @connection = @factory.new_connection @config
       __setobj__ @connection
@@ -373,7 +369,7 @@ class OCI8EnhancedAutoRecover < DelegateClass(OCI8) #:nodoc:
       @active = false
       raise unless should_retry
       should_retry = false
-      reset! rescue nil
+      reset! 
       retry
     end
   end

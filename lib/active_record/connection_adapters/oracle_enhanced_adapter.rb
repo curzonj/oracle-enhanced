@@ -557,20 +557,16 @@ module ActiveRecord
         # last known state, which isn't good enough if the connection has
         # gone stale since the last use.
         @connection.ping
-      rescue OracleEnhancedConnectionException
-        false
       end
 
       # Reconnects to the database.
       def reconnect! #:nodoc:
         @connection.reset!
-      rescue OracleEnhancedConnectionException => e
-        @logger.warn "#{adapter_name} automatic reconnection failed: #{e.message}" if @logger
       end
 
       # Disconnects from the database.
       def disconnect! #:nodoc:
-        @connection.logoff rescue nil
+        @connection.logoff 
       end
 
       # DATABASE STATEMENTS ======================================
@@ -1031,13 +1027,13 @@ module ActiveRecord
 
       def rename_table(name, new_name) #:nodoc:
         execute "RENAME #{quote_table_name(name)} TO #{quote_table_name(new_name)}"
-        execute "RENAME #{quote_table_name("#{name}_seq")} TO #{quote_table_name("#{new_name}_seq")}" rescue nil
+        execute "RENAME #{quote_table_name("#{name}_seq")} TO #{quote_table_name("#{new_name}_seq")}" 
       end
 
       def drop_table(name, options = {}) #:nodoc:
         super(name)
         seq_name = options[:sequence_name] || default_sequence_name(name)
-        execute "DROP SEQUENCE #{quote_table_name(seq_name)}" rescue nil
+        execute "DROP SEQUENCE #{quote_table_name(seq_name)}" 
       ensure
         clear_table_columns_cache(name)
       end
@@ -1485,7 +1481,13 @@ module ActiveRecord
 
       def select(sql, name = nil, return_column_names = false)
         log(sql, name) do
-          @connection.select(sql, name, return_column_names)
+          begin
+            @connection.select(sql, name, return_column_names)
+          rescue
+            puts $!.message
+            puts $!.backtrace.join("\n")
+            raise
+          end
         end
       end
 
